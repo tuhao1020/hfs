@@ -10,6 +10,6 @@ this will start a http file server on 8090 for current directory.
 
 command line parameters
 ```
--dir    // specify root directory, default value is ./
+-dir    // specify root file directory, default value is ./
 -port   // specify http file server port, default value is 8090
 ```
