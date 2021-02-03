@@ -1,5 +1,7 @@
 # hfs
-a Http File Server based on Iris
+a Http File Server based on [Iris](https://github.com/kataras/iris)
+
+<img src="https://github.com/tuhao1020/filerepo/blob/master/images/hfs.png">
 
 Usage:
 ```
