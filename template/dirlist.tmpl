@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Static File Server</title>
+    <style>
+        * {
+            font-family: Consolas, Courier, Monaco, "Courier New", FreeMono, monospace;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 1em
+        }
+
+        li {
+            line-height: 1.2em;
+        }
+
+        li span {
+            float: left;
+            display: inline-block;
+        }
+
+        li span.mode {
+            width: 8em;
+        }
+
+        li span.modtime {
+            width: 12em;
+        }
+
+        li span.size {
+            width: 4em;
+            text-align: right;
+        }
+
+        li span.unit {
+            width: 4em;
+            padding-left: .5em
+        }
+    </style>
+</head>
+<body>
+<h2><span>Current Directory: </span>{{ range $idx, $nav := .Navs }}<a href="{{ $nav.Url }}">{{ $nav.Label }}</a> {{ end }}</h2>
+{{ if eq (len .Files) 0 }}<div>No files or directories here.</div> {{ end }}
+<ul>
+    {{ range $idx, $file := .Files }}
+    <li>
+        <span class="mode">{{ $file.Mode }}</span>
+        <span class="modtime">{{ $file.ModTime.Format "2006/01/02 15:03:04" }}</span>
+        <span class="size">{{ $file.ReadableSize }}</span>
+        <span class="unit">{{ $file.ReadableUnit }}</span>
+        <a href="{{ $file.Url }}">{{ $file.ViewName }}</a></li>
+    {{ end }}
+</ul>
+</body>
+</html>
