@@ -9,8 +9,9 @@ import (
 )
 
 func main() {
-	dir := flag.String("dir", "./", "file directory")
+	dir := flag.String("dir", "./", "root directory")
 	port := flag.Int("port", 8090, "server port")
+	showHidden := flag.Bool("showHidden", false, "show hidden files or directories")
 	flag.Parse()
 
 	if !core.IsExist(*dir) {
@@ -20,8 +21,9 @@ func main() {
 	app := iris.New()
 	app.Favicon("./favicon.ico")
 	app.HandleDir("/", iris.Dir(*dir), iris.DirOptions{
-		ShowList: true,
-		DirList: core.TemplateDirList(),
+		ShowList:   true,
+		ShowHidden: *showHidden,
+		DirList:    core.TemplateDirList(),
 	})
 	_ = app.Listen(fmt.Sprintf(":%d", *port))
 }
