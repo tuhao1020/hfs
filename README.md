@@ -12,7 +12,10 @@ this will start a http file server on 8090 for current directory.
 
 command line parameters
 ```
--dir        // specify root file directory, default value is ./
--port       // specify http file server port, default value is 8090
--showHidden // show hidden files or directories, default value is false
+-dir        // specify root file directory, default: ./
+-port       // specify http file server port, default: 8090
+-showHidden // show hidden files or directories, default: false
+-tls        // enable tls， default: false
+-certFile   // cert file path
+-keyFile    // key file path
 ```
