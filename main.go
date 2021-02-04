@@ -31,11 +31,17 @@ func main() {
 		DirList:    core.TemplateDirList(),
 	})
 
+	// http file management interfaces
+	party := app.Party("/manager")
+	party.Put("/upload", core.Upload)
+	party.Post("/name", core.Rename)
+	party.Delete("/{p:path}", core.Remove)
+
 	var err error
 	if *tls {
-		err = app.Run(iris.TLS(fmt.Sprintf(":%d", *port), *certFile, *keyFile))
+		err = app.Run(iris.TLS(fmt.Sprintf(":%d", *port), *certFile, *keyFile), iris.WithPostMaxMemory(32*iris.MB))
 	} else {
-		err = app.Listen(fmt.Sprintf(":%d", *port))
+		err = app.Listen(fmt.Sprintf(":%d", *port), iris.WithPostMaxMemory(32*iris.MB))
 	}
 
 	if err != nil {
