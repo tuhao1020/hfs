@@ -9,8 +9,17 @@ import (
 )
 
 type RenameObject struct {
-	Src     string `form:"src"`
-	NewName string `form:"newName"`
+	Src     string `json:"src"`
+	NewName string `json:"newName"`
+}
+
+type BatchRemoveObject struct {
+	Files []string `json:"files"`
+}
+
+type MoveObject struct {
+	Src  string `json:"src"`
+	Dest string `json:"dest"`
 }
 
 // Upload files via multipart/form-data
@@ -23,8 +32,18 @@ func Upload(ctx iris.Context) {
 	}
 
 	form := ctx.Request().MultipartForm
-	dest := "./" + form.Value["dest"][0]
+	destParam := form.Value["dest"]
+	dest := "./"
+	if destParam != nil {
+		dest += destParam[0]
+	}
+
 	files := form.File["files"]
+	if len(files) == 0 {
+		ResponseError(ctx, iris.StatusBadRequest, "files not found")
+		return
+	}
+
 	failures := make([]string, 0)
 	for _, file := range files {
 		_, err = ctx.SaveFormFile(file, dest+"/"+file.Filename)
@@ -35,27 +54,27 @@ func Upload(ctx iris.Context) {
 
 	if len(failures) > 0 {
 		errMsg := fmt.Sprintf("%s upload failed.", strings.Join(failures, ", "))
-		ctx.JSON(ResponseError(iris.StatusBadRequest, errMsg))
+		ResponseError(ctx, iris.StatusBadRequest, errMsg)
 	} else {
-		ctx.JSON(ResponseOK())
+		ResponseOK(ctx)
 	}
 }
 
-// Rename file or directory
+// Rename a file or directory
 func Rename(ctx iris.Context) {
 	var renameObj RenameObject
-	err := ctx.ReadForm(&renameObj)
+	err := ctx.ReadJSON(&renameObj)
 	if err != nil {
-		ctx.JSON(ResponseError(iris.StatusBadRequest, err.Error()))
+		ResponseError(ctx, iris.StatusBadRequest, err.Error())
 		return
 	}
 
 	oldPath := "./" + renameObj.Src
 	err = os.Rename(oldPath, filepath.Dir(oldPath)+"/"+renameObj.NewName)
 	if err != nil {
-		ctx.JSON(ResponseError(iris.StatusBadRequest, err.Error()))
+		ResponseError(ctx, iris.StatusBadRequest, err.Error())
 	} else {
-		ctx.JSON(ResponseOK())
+		ResponseOK(ctx)
 	}
 }
 
@@ -64,8 +83,61 @@ func Remove(ctx iris.Context) {
 	path := "./" + ctx.Params().Get("p")
 	err := os.RemoveAll(path)
 	if err != nil {
-		ctx.JSON(ResponseError(iris.StatusBadRequest, err.Error()))
+		ResponseError(ctx, iris.StatusBadRequest, err.Error())
 	} else {
-		ctx.JSON(ResponseOK())
+		ResponseOK(ctx)
+	}
+}
+
+// BatchRemove remove multiple files or directories once
+func BatchRemove(ctx iris.Context) {
+	var batchRemoveObj BatchRemoveObject
+	err := ctx.ReadJSON(&batchRemoveObj)
+	if err != nil {
+		ResponseError(ctx, iris.StatusInternalServerError, err.Error())
+		return
+	}
+
+	failures := make([]string, 0)
+	for _, path := range batchRemoveObj.Files {
+		err = os.RemoveAll(path)
+		if err != nil {
+			failures = append(failures, path)
+		}
+	}
+
+	if len(failures) > 0 {
+		errMsg := fmt.Sprintf("%s delete failed.", strings.Join(failures, ", "))
+		ResponseError(ctx, iris.StatusBadRequest, errMsg)
+	} else {
+		ResponseOK(ctx)
+	}
+}
+
+// Move a file to another exist location
+func Move(ctx iris.Context) {
+	var moveObj MoveObject
+	err := ctx.ReadJSON(&moveObj)
+	if err != nil {
+		ResponseError(ctx, iris.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = os.Rename("./"+moveObj.Src, "./"+moveObj.Dest)
+	if err != nil {
+		ResponseError(ctx, iris.StatusBadRequest, err.Error())
+	} else {
+		ResponseOK(ctx)
+	}
+}
+
+// CreateFolder for the given path
+func CreateFolder(ctx iris.Context) {
+	path := "./" + ctx.Params().Get("p")
+	err := os.MkdirAll(path, os.ModeDir)
+	if err != nil {
+		ResponseError(ctx, iris.StatusBadRequest, err.Error())
+	} else {
+		ResponseOK(ctx)
 	}
 }
