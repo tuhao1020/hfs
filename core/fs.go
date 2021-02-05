@@ -2,23 +2,24 @@ package core
 
 import (
 	"fmt"
+	"github.com/kataras/iris/v12"
 	"os"
 )
 
 type FileInfo struct {
 	os.FileInfo
-	Url string
+	Url      string
 	ViewName string
 }
 
 type NavInfo struct {
 	Label string
-	Url string
+	Url   string
 }
 
 type PageData struct {
 	Files []FileInfo
-	Navs []NavInfo
+	Navs  []NavInfo
 }
 
 func (f FileInfo) formattedSize() (string, string) {
@@ -27,19 +28,28 @@ func (f FileInfo) formattedSize() (string, string) {
 	}
 
 	var sizeStr, unitStr string
-	s := f.Size()
-	if s < 1024 {
+	s := float64(f.Size())
+	if s < iris.KB {
 		sizeStr = fmt.Sprintf("%6d", s)
 		unitStr = "B"
-	} else if s < 1024 * 1024 {
-		sizeStr = fmt.Sprintf("%6.1f", float64(s)/1024)
+	} else if s < 1024*iris.KB {
+		sizeStr = fmt.Sprintf("%6.1f", s/iris.KB)
 		unitStr = "KB"
-	} else if s < 1024 * 1024 * 1024 {
-		sizeStr = fmt.Sprintf("%6.1f", float64(s)/1024/1024)
+	} else if s < 1024*iris.MB {
+		sizeStr = fmt.Sprintf("%6.1f", s/iris.MB)
 		unitStr = "MB"
-	} else if s < 1024 * 1024 * 1024 * 1024 {
-		sizeStr = fmt.Sprintf("%6.1f", float64(s)/1024/1024/1024)
-		unitStr = "T"
+	} else if s < 1024*iris.GB {
+		sizeStr = fmt.Sprintf("%6.1f", s/iris.GB)
+		unitStr = "GB"
+	} else if s < 1024*iris.TB {
+		sizeStr = fmt.Sprintf("%6.1f", s/iris.TB)
+		unitStr = "TB"
+	} else if s < 1024*iris.PB {
+		sizeStr = fmt.Sprintf("%6.1f", s/iris.PB)
+		unitStr = "PB"
+	} else if s < 1024*iris.EB {
+		sizeStr = fmt.Sprintf("%6.1f", s/iris.EB)
+		unitStr = "EB"
 	}
 	return sizeStr, unitStr
 }
