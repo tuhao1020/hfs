@@ -22,6 +22,10 @@ type PageData struct {
 	Navs  []NavInfo
 }
 
+const (
+	SizeFormat = "%6.1f"
+)
+
 func (f FileInfo) formattedSize() (string, string) {
 	if f.IsDir() {
 		return "-", "-"
@@ -30,25 +34,25 @@ func (f FileInfo) formattedSize() (string, string) {
 	var sizeStr, unitStr string
 	s := float64(f.Size())
 	if s < iris.KB {
-		sizeStr = fmt.Sprintf("%6d", s)
+		sizeStr = fmt.Sprintf(SizeFormat, s)
 		unitStr = "B"
 	} else if s < 1024*iris.KB {
-		sizeStr = fmt.Sprintf("%6.1f", s/iris.KB)
+		sizeStr = fmt.Sprintf(SizeFormat, s/iris.KB)
 		unitStr = "KB"
 	} else if s < 1024*iris.MB {
-		sizeStr = fmt.Sprintf("%6.1f", s/iris.MB)
+		sizeStr = fmt.Sprintf(SizeFormat, s/iris.MB)
 		unitStr = "MB"
 	} else if s < 1024*iris.GB {
-		sizeStr = fmt.Sprintf("%6.1f", s/iris.GB)
+		sizeStr = fmt.Sprintf(SizeFormat, s/iris.GB)
 		unitStr = "GB"
 	} else if s < 1024*iris.TB {
-		sizeStr = fmt.Sprintf("%6.1f", s/iris.TB)
+		sizeStr = fmt.Sprintf(SizeFormat, s/iris.TB)
 		unitStr = "TB"
 	} else if s < 1024*iris.PB {
-		sizeStr = fmt.Sprintf("%6.1f", s/iris.PB)
+		sizeStr = fmt.Sprintf(SizeFormat, s/iris.PB)
 		unitStr = "PB"
 	} else if s < 1024*iris.EB {
-		sizeStr = fmt.Sprintf("%6.1f", s/iris.EB)
+		sizeStr = fmt.Sprintf(SizeFormat, s/iris.EB)
 		unitStr = "EB"
 	}
 	return sizeStr, unitStr
