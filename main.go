@@ -35,8 +35,7 @@ func main() {
 	party := app.Party("/manager")
 	party.Put("/upload", core.Upload)
 	party.Put("/md/{p:path}", core.CreateFolder)
-	party.Post("/name", core.Rename)
-	party.Post("/mv", core.Move)
+	party.Post("/bmv", core.BatchMove)
 	party.Delete("/rm/{p:path}", core.Remove)
 	party.Delete("/brm", core.BatchRemove)
 
