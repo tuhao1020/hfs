@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"github.com/kataras/iris/v12"
 	"os"
@@ -20,8 +21,12 @@ type BatchMoveParam struct {
 	Params []MoveParam `json:"params"`
 }
 
+type FileManager struct {
+	RootDir string
+}
+
 // Upload files via multipart/form-data
-func Upload(ctx iris.Context) {
+func (fm FileManager) Upload(ctx iris.Context) {
 	maxSize := ctx.Application().ConfigurationReadOnly().GetPostMaxMemory()
 	err := ctx.Request().ParseMultipartForm(maxSize)
 	if err != nil {
@@ -32,9 +37,9 @@ func Upload(ctx iris.Context) {
 	form := ctx.Request().MultipartForm
 	destParam := form.Value["dest"]
 	// if dest is not set, the default path is
-	dest := "./"
+	dest := fm.RootDir
 	if destParam != nil {
-		dest = web2LocalPath(destParam[0])
+		dest = fm.web2LocalPath(destParam[0])
 	}
 
 	files := form.File["files"]
@@ -60,8 +65,8 @@ func Upload(ctx iris.Context) {
 }
 
 // Remove file or directory(even if directory is not empty)
-func Remove(ctx iris.Context) {
-	path := web2LocalPath(ctx.Params().Get("p"))
+func (fm FileManager) Remove(ctx iris.Context) {
+	path := fm.web2LocalPath(ctx.Params().Get("p"))
 	err := os.RemoveAll(path)
 	if err != nil {
 		ResponseError(ctx, iris.StatusBadRequest, err.Error())
@@ -71,7 +76,7 @@ func Remove(ctx iris.Context) {
 }
 
 // BatchRemove remove multiple files or directories once
-func BatchRemove(ctx iris.Context) {
+func (fm FileManager) BatchRemove(ctx iris.Context) {
 	var batchRemoveParam BatchRemoveParam
 	err := ctx.ReadJSON(&batchRemoveParam)
 	if err != nil {
@@ -96,7 +101,7 @@ func BatchRemove(ctx iris.Context) {
 }
 
 // BatchMove or rename multiple files or directories to another exist location
-func BatchMove(ctx iris.Context) {
+func (fm FileManager) BatchMove(ctx iris.Context) {
 	var batchMoveParam BatchMoveParam
 	err := ctx.ReadJSON(&batchMoveParam)
 	if err != nil {
@@ -106,7 +111,7 @@ func BatchMove(ctx iris.Context) {
 
 	failures := make([]string, 0)
 	for _, param := range batchMoveParam.Params {
-		err = MoveTo(param.Src, param.Dest)
+		err = fm.moveTo(param.Src, param.Dest)
 		if err != nil {
 			failures = append(failures, param.Src)
 		}
@@ -121,12 +126,33 @@ func BatchMove(ctx iris.Context) {
 }
 
 // CreateFolder for the given path
-func CreateFolder(ctx iris.Context) {
-	path := web2LocalPath(ctx.Params().Get("p"))
+func (fm FileManager) CreateFolder(ctx iris.Context) {
+	path := fm.web2LocalPath(ctx.Params().Get("p"))
 	err := os.MkdirAll(path, os.ModeDir)
 	if err != nil {
 		ResponseError(ctx, iris.StatusBadRequest, err.Error())
 	} else {
 		ResponseOK(ctx)
 	}
+}
+
+func (fm FileManager) web2LocalPath(webPath string) string {
+	return fm.RootDir + "/" + webPath
+}
+
+func (fm FileManager) moveTo(src, dest string) error {
+	srcLocal := fm.web2LocalPath(src)
+	destLocal := fm.web2LocalPath(dest)
+	if !IsExist(srcLocal) {
+		return errors.New(srcLocal + " not exist")
+	}
+
+	srcInfo, err := os.Stat(srcLocal)
+	if srcInfo.IsDir() {
+		err = os.Rename(srcLocal, destLocal+"/"+srcInfo.Name())
+	} else {
+		err = os.Rename(srcLocal, destLocal)
+	}
+
+	return err
 }

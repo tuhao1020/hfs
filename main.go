@@ -33,11 +33,14 @@ func main() {
 
 	// http file management interfaces
 	party := app.Party("/manager")
-	party.Put("/upload", core.Upload)
-	party.Put("/md/{p:path}", core.CreateFolder)
-	party.Post("/bmv", core.BatchMove)
-	party.Delete("/rm/{p:path}", core.Remove)
-	party.Delete("/brm", core.BatchRemove)
+	fm := core.FileManager{
+		RootDir: *dir,
+	}
+	party.Put("/upload", fm.Upload)
+	party.Put("/md/{p:path}", fm.CreateFolder)
+	party.Post("/bmv", fm.BatchMove)
+	party.Delete("/rm/{p:path}", fm.Remove)
+	party.Delete("/brm", fm.BatchRemove)
 
 	var err error
 	if *tls {

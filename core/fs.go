@@ -3,9 +3,7 @@ package core
 import (
 	"fmt"
 	"github.com/kataras/iris/v12"
-	"github.com/pkg/errors"
 	"os"
-	"strings"
 )
 
 type FileInfo struct {
@@ -94,28 +92,4 @@ func IsExist(filepath string) bool {
 		return os.IsExist(err)
 	}
 	return true
-}
-
-func web2LocalPath(webPath string) string {
-	if strings.HasPrefix(webPath, "/") {
-		return "." + webPath
-	}
-	return "./" + webPath
-}
-
-func MoveTo(src, dest string) error {
-	srcLocal := web2LocalPath(src)
-	destLocal := web2LocalPath(dest)
-	if !IsExist(srcLocal) {
-		return errors.New(srcLocal + " not exist")
-	}
-
-	srcInfo, err := os.Stat(srcLocal)
-	if srcInfo.IsDir() {
-		err = os.Rename(srcLocal, destLocal+"/"+srcInfo.Name())
-	} else {
-		err = os.Rename(srcLocal, destLocal)
-	}
-
-	return err
 }
