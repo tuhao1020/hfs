@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/kataras/iris/v12"
+	"github.com/markbates/pkger"
 	"hfs/core"
 	"log"
 	"os"
@@ -35,6 +36,9 @@ func main() {
 
 	app := iris.New()
 	app.Favicon("./favicon.ico")
+
+	// embed template file
+	_, _ = pkger.Open("/template")
 
 	// http file server
 	app.HandleDir("/", iris.Dir(*dir), iris.DirOptions{

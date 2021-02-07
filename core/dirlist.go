@@ -4,10 +4,14 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/core/router"
+	"github.com/markbates/pkger"
 	"html"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"sort"
 	"strings"
@@ -18,29 +22,29 @@ type TemplateOption struct {
 }
 
 // generate navigator urls from request path
-func requestPath2Nav(path string) []NavInfo {
+func requestPath2Nav(rpath string) []NavInfo {
 	navs := make([]NavInfo, 1)
 	navs[0] = NavInfo{
 		Label: "/",
 		Url:   "/",
 	}
 
-	if path == "/" {
+	if rpath == "/" {
 		return navs
 	}
 
-	pathSlice := strings.Split(path[1:], "/")
-	url := new(strings.Builder)
-	for idx, path := range pathSlice {
-		url.WriteString("/")
-		url.WriteString(path)
-		label := "/" + path
-		if idx ==0 {
-			label = path
+	pathSlice := strings.Split(rpath[1:], "/")
+	urlBuilder := new(strings.Builder)
+	for idx, fpath := range pathSlice {
+		urlBuilder.WriteString("/")
+		urlBuilder.WriteString(fpath)
+		label := "/" + fpath
+		if idx == 0 {
+			label = fpath
 		}
 		navs = append(navs, NavInfo{
 			Label: label,
-			Url: url.String(),
+			Url:   urlBuilder.String(),
 		})
 	}
 	return navs
@@ -53,9 +57,16 @@ func TemplateDirList(opts ...TemplateOption) router.DirListFunc {
 		option = opts[0]
 	}
 
+	var f io.Reader
 	if option.TemplatePath == "" {
-		option.TemplatePath = "./template/dirlist.tmpl"
+		option.TemplatePath = "/template/dirlist.tmpl"
+		f, _ = pkger.Open(option.TemplatePath)
+	} else {
+		f, _ = os.Open(option.TemplatePath)
 	}
+
+	content, _ := ioutil.ReadAll(f)
+	templateContent := string(content)
 
 	return func(ctx *context.Context, dirOptions iris.DirOptions, dirName string, dir http.File) error {
 		dirs, err := dir.Readdir(-1)
@@ -65,7 +76,7 @@ func TemplateDirList(opts ...TemplateOption) router.DirListFunc {
 
 		pagData := PageData{
 			Files: make([]FileInfo, 0),
-			Navs: requestPath2Nav(ctx.RequestPath(true)),
+			Navs:  requestPath2Nav(ctx.RequestPath(true)),
 		}
 
 		dirSlice := make([]FileInfo, 0)
@@ -79,14 +90,14 @@ func TemplateDirList(opts ...TemplateOption) router.DirListFunc {
 			name := ToBaseName(d.Name())
 
 			upath := path.Join(ctx.Request().RequestURI, name)
-			url := url.URL{Path: upath}
+			urlObj := url.URL{Path: upath}
 
 			viewName := name
 			if d.IsDir() {
 				viewName += "/"
-				dirSlice = append(dirSlice, FileInfo{d, url.String(), html.EscapeString(viewName)})
+				dirSlice = append(dirSlice, FileInfo{d, urlObj.String(), html.EscapeString(viewName)})
 			} else {
-				fileSlice = append(fileSlice, FileInfo{d, url.String(), html.EscapeString(viewName)})
+				fileSlice = append(fileSlice, FileInfo{d, urlObj.String(), html.EscapeString(viewName)})
 			}
 		}
 
@@ -100,7 +111,10 @@ func TemplateDirList(opts ...TemplateOption) router.DirListFunc {
 		pagData.Files = append(pagData.Files, dirSlice...)
 		pagData.Files = append(pagData.Files, fileSlice...)
 
-		tmpl, _ := template.ParseFiles(option.TemplatePath)
+		tmpl, err := template.New("default").Parse(templateContent)
+		if err != nil {
+			return err
+		}
 		return tmpl.Execute(ctx, pagData)
 	}
 }
