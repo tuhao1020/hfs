@@ -18,4 +18,5 @@ command line parameters
 -tls        // enable tls， default: false
 -certFile   // cert file path
 -keyFile    // key file path
+-v          // show version
 ```
