@@ -6,6 +6,11 @@ import (
 	"github.com/kataras/iris/v12"
 	"hfs/core"
 	"log"
+	"os"
+)
+
+var (
+	Version string
 )
 
 func main() {
@@ -15,7 +20,14 @@ func main() {
 	tls := flag.Bool("tls", false, "enable tls")
 	certFile := flag.String("certFile", "", "cert file")
 	keyFile := flag.String("keyFile", "", "key file")
+	flag.Bool("v", false, "show version")
 	flag.Parse()
+
+	// show version
+	if len(os.Args) == 2 && os.Args[1] == "-v" {
+		fmt.Println(Version)
+		return
+	}
 
 	if !core.IsExist(*dir) {
 		log.Fatalln("dir not found.")
