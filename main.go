@@ -38,7 +38,7 @@ func main() {
 	app.Favicon("./favicon.ico")
 
 	// embed template file
-	_, _ = pkger.Open("/template")
+	pkger.Include("/template")
 
 	// http file server
 	app.HandleDir("/", iris.Dir(*dir), iris.DirOptions{

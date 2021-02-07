@@ -42,6 +42,8 @@ func requestPath2Nav(rpath string) []NavInfo {
 		if idx == 0 {
 			label = fpath
 		}
+
+		label, _ = url.PathUnescape(label)
 		navs = append(navs, NavInfo{
 			Label: label,
 			Url:   urlBuilder.String(),
@@ -88,16 +90,14 @@ func TemplateDirList(opts ...TemplateOption) router.DirListFunc {
 			}
 
 			name := ToBaseName(d.Name())
-
-			upath := path.Join(ctx.Request().RequestURI, name)
-			urlObj := url.URL{Path: upath}
+			upath := path.Join(ctx.Request().RequestURI, url.PathEscape(name))
 
 			viewName := name
 			if d.IsDir() {
 				viewName += "/"
-				dirSlice = append(dirSlice, FileInfo{d, urlObj.String(), html.EscapeString(viewName)})
+				dirSlice = append(dirSlice, FileInfo{d, upath, html.EscapeString(viewName)})
 			} else {
-				fileSlice = append(fileSlice, FileInfo{d, urlObj.String(), html.EscapeString(viewName)})
+				fileSlice = append(fileSlice, FileInfo{d, upath, html.EscapeString(viewName)})
 			}
 		}
 
