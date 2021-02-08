@@ -14,6 +14,10 @@ var (
 	Version string
 )
 
+const (
+	CustomTemplatePath = "./template/"
+)
+
 func main() {
 	dir := flag.String("dir", "./", "root directory")
 	port := flag.Int("port", 8090, "server port")
@@ -21,6 +25,7 @@ func main() {
 	tls := flag.Bool("tls", false, "enable tls")
 	certFile := flag.String("certFile", "", "cert file")
 	keyFile := flag.String("keyFile", "", "key file")
+	tmplName := flag.String("tmpl", "", "custom template file name")
 	flag.Bool("v", false, "show version")
 	flag.Parse()
 
@@ -40,11 +45,19 @@ func main() {
 	// embed template file
 	pkger.Include("/template")
 
+	opts := core.TemplateOption{}
+	if !core.IsExist(CustomTemplatePath) || *tmplName == "" {
+		fmt.Println("Use default template")
+	} else {
+		opts.TemplatePath = CustomTemplatePath + (*tmplName)
+		fmt.Println("Template file: ", opts.TemplatePath)
+	}
+
 	// http file server
 	app.HandleDir("/", iris.Dir(*dir), iris.DirOptions{
 		ShowList:   true,
 		ShowHidden: *showHidden,
-		DirList:    core.TemplateDirList(),
+		DirList:    core.TemplateDirList(opts),
 	})
 
 	// http file management interfaces
