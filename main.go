@@ -6,6 +6,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/markbates/pkger"
 	"hfs/core"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -16,7 +17,15 @@ var (
 
 const (
 	CustomTemplatePath = "./template/"
+	FaviconPath        = "./favicon.ico"
 )
+
+func embeddedFaviconHandler(ctx iris.Context) {
+	ctx.ContentType("image/x-icon")
+	r, _ := pkger.Open("/favicon.ico")
+	rawBytes, _ := ioutil.ReadAll(r)
+	_, _ = ctx.Write(rawBytes)
+}
 
 func main() {
 	dir := flag.String("dir", "./", "root directory")
@@ -40,10 +49,17 @@ func main() {
 	}
 
 	app := iris.New()
-	app.Favicon("./favicon.ico")
 
-	// embed template file
+	// embed template and ico file
 	pkger.Include("/template")
+	pkger.Include(FaviconPath)
+
+	// support for custom ico and template file
+	if core.IsExist(FaviconPath) {
+		app.Favicon(FaviconPath)
+	} else {
+		app.Get("/favicon.ico", embeddedFaviconHandler)
+	}
 
 	opts := core.TemplateOption{}
 	if !core.IsExist(CustomTemplatePath) || *tmplName == "" {
