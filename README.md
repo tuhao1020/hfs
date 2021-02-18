@@ -3,7 +3,7 @@ a Http File Server based on [Iris](https://github.com/kataras/iris)
 
 <img src="https://github.com/tuhao1020/filerepo/blob/master/images/hfs.png">
 
-Usage:
+## Usage:
 ```
 ./hfs
 ```
@@ -21,3 +21,14 @@ command line parameters
 -tmplName   // custom template file name (should be in ./template directory)
 -v          // show version
 ```
+
+## Custom favicon
+place your custom `favicon.ico` into the same directory of `hfs` executable file.
+
+## Custom list template
+1. copy the `template` directory of the source code and place it into the same directory of `hfs` executable file.
+2. edit the `dirlist.tmpl` to change the view.
+
+
+
+
