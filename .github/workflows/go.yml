@@ -22,7 +22,6 @@ jobs:
       run: |
           echo ::set-output name=APPNAME::hfs
           echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-          echo ::set-output name=REPO::https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main
       
     - name: Build project
       run: |
@@ -43,7 +42,6 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
-        body_path: ${{ steps.get_version.outputs.REPO }}/release_history/${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
         
