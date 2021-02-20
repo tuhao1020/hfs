@@ -22,19 +22,20 @@ jobs:
       run: |
           echo ::set-output name=APPNAME::hfs
           echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+          echo ::set-output name=REPO::${{GITHUB_SERVER_URL}}/${{GITHUB_REPOSITORY}}
       
-    - name: Pack executable file
+    - name: Build project
       run: |
           GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.Version=${{ steps.get_version.outputs.VERSION }}" -o ${{ steps.get_version.outputs.APPNAME }}_win_amd64.exe
           GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.Version=${{ steps.get_version.outputs.VERSION }}" -o ${{ steps.get_version.outputs.APPNAME }}_linux_amd64
           GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w -X main.Version=${{ steps.get_version.outputs.VERSION }}" -o ${{ steps.get_version.outputs.APPNAME }}_darwin_amd64
           
-    - name: Build project # This would actually build your project, using zip for an example artifact
+    - name: Pack executable file # This would actually build your project, using zip for an example artifact
       run: |
           zip --junk-paths ${{ steps.get_version.outputs.APPNAME }}_win README.md LICENSE ${{ steps.get_version.outputs.APPNAME }}_win_amd64.exe
           zip --junk-paths ${{ steps.get_version.outputs.APPNAME }}_linux README.md LICENSE ${{ steps.get_version.outputs.APPNAME }}_linux_amd64
           zip --junk-paths ${{ steps.get_version.outputs.APPNAME }}_darwin README.md LICENSE ${{ steps.get_version.outputs.APPNAME }}_darwin_amd64
-    - name: Create Release
+    - name: Create release
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -42,7 +43,7 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
-        body_path: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/release_history/${{ steps.get_version.outputs.VERSION }}
+        body_path: ${{ steps.get_version.outputs.REPO }}/release_history/${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
         
