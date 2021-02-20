@@ -42,7 +42,7 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
-        body_path: ${{ GITHUB_SERVER_URL }}/${{ GITHUB_REPOSITORY }}/release_history/${{ steps.get_version.outputs.VERSION }}
+        body_path: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/release_history/${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
         
