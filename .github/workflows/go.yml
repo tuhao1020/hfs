@@ -22,7 +22,7 @@ jobs:
       run: |
           echo ::set-output name=APPNAME::hfs
           echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-          echo ::set-output name=REPO::${{GITHUB_SERVER_URL}}/${{GITHUB_REPOSITORY}}
+          echo ::set-output name=REPO::$GITHUB_SERVER_URL/$GITHUB_REPOSITORY
       
     - name: Build project
       run: |
